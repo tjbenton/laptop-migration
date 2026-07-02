@@ -53,10 +53,11 @@ Fresh OS on new laptop — no Time Machine restore. Copy personal files to an ex
 
 **Shell & Git**
 
-- `~/.bash_profile`, `~/.bash_aliases`, `~/.bash_exports`, `~/.bash_functions`, `~/.bashrc`
-- `~/.zshrc`
-- `~/.gitconfig`, `~/.gitignore`, `~/.git_completion.sh`, `~/.inputrc`, `~/.hushlogin`
-- `~/dev-setup/dotfiles/` (older backup)
+- `~/.zshrc`, `~/.bash_profile` (shim) — **handled by chezmoi** (`home/dot_zshrc`, `home/dot_bash_profile`)
+- Legacy bash files (`~/.bash_aliases`, `~/.bash_exports`, `~/.bash_functions`) — **replaced** by consolidated `~/.zshrc`; not copied
+- `~/.gitconfig` — **handled by chezmoi** (`home/dot_gitconfig.tmpl`)
+- `~/.gitignore`, `~/.git_completion.sh`, `~/.inputrc`, `~/.hushlogin` — manual follow-up if still needed
+- `~/dev-setup/dotfiles/` (older backup) — skip
 
 **Hyper**
 
@@ -65,17 +66,18 @@ Fresh OS on new laptop — no Time Machine restore. Copy personal files to an ex
 
 **Cursor**
 
-- `~/Library/Application Support/Cursor/User/settings.json`
-- `~/Library/Application Support/Cursor/User/keybindings.json`
-- `~/.cursor/skills/`, `~/.cursor/skills-cursor/`, `~/.cursor/hooks/`, `~/.cursor/hooks.json`
-- `~/.cursor/plugins/`
-- Per-project: `~/ui-development/*/.cursor/` rules
-- `~/.vscode/style.css` (custom CSS for Cursor)
+- `~/Library/Application Support/Cursor/User/settings.json` — **handled by `migrate/pack.sh`** (`cursor-setup.tar.gz`)
+- `~/Library/Application Support/Cursor/User/keybindings.json` — **handled by migrate pack**
+- `~/.cursor/hooks/`, `~/.cursor/hooks.json` — **handled by migrate pack**
+- `~/.vscode/style.css` (custom CSS for Cursor) — **handled by migrate pack**
+- `~/.cursor/skills/`, `~/.cursor/skills-cursor/`, `~/.cursor/plugins/` — skip (reinstall / sync separately)
+- Per-project: `~/ui-development/*/.cursor/` rules — included via ui-development archive
 - **Skip:** `History/`, `workspaceStorage/`, `globalStorage/`, `chats/`, `plans/`
 
 **Fonts**
 
-- `~/Library/Fonts/` (~158 files, includes Operator Mono)
+- Fira Code + Operator Mono — **handled by migrate pack** (`cursor-setup.tar.gz`)
+- Other `~/Library/Fonts/` files — not copied; reinstall or add manually if needed
 
 **SSH** (secure copy — decide copy vs regenerate)
 
@@ -156,7 +158,9 @@ make brew-dump
 
 ---
 
-## Recommended rsync shape (when ready to copy)
+## Recommended rsync shape (legacy reference)
+
+The scripts in `migrate/pack.sh` and `migrate/restore.sh` replace manual rsync for the default folder set. Keep this section as reference if you need a one-off copy:
 
 ```bash
 BACKUP="/Volumes/YourDrive/laptop-migration/personal-files"
@@ -181,6 +185,16 @@ rsync -av --progress \
   ~/ui-development/shop-rn/ "${BACKUP}/ui-development/shop-rn/"
 ```
 
+### Scripted pack + restore (preferred)
+
+```bash
+# Old Mac
+./migrate/pack.sh /Volumes/YourDrive
+
+# New Mac
+/Volumes/YourDrive/laptop-migration-files/restore.sh
+```
+
 ---
 
 ## Status
@@ -189,7 +203,7 @@ rsync -av --progress \
 |------|--------|
 | Brewfile captured | Done (in repo root) |
 | chezmoi + Makefile scaffold | Done |
-| Dotfile seeding (zsh, bash, Hyper, Cursor) | **Follow-up** |
-| Personal file copy script | **Follow-up** (needs 20 Q answers) |
+| Dotfile seeding (zsh, bash, Hyper, Cursor) | zsh/bash done via chezmoi; Hyper/Cursor **follow-up** |
+| Personal file copy script | Done (`migrate/pack.sh`, `migrate/restore.sh`) |
 | `mas` App Store entries | **Follow-up** |
 | Secrets (age / 1Password) | **Follow-up** |

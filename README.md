@@ -28,7 +28,8 @@ make doctor     # sanity check
 | Layer | Tool | Notes |
 |-------|------|-------|
 | Package manager | Homebrew + Brewfile | Formulae, casks, VS Code/Cursor extensions |
-| Dotfiles | chezmoi | Templated `.gitconfig`, hooks for brew/runtimes/macos |
+| Shell | zsh + oh-my-zsh | Consolidated `~/.zshrc`, syntax highlighting, default shell via `chsh` |
+| Dotfiles | chezmoi | Templated `.gitconfig`, hooks for brew/shell/runtimes/macos |
 | Ruby | rbenv | Default 3.4.9 (override via `LAPTOP_MIGRATION_RUBY`) |
 | Node | nvm | Default 20.19.4 (override via `LAPTOP_MIGRATION_NODE`) |
 | Python | uv | Default 3.12 (override via `LAPTOP_MIGRATION_PYTHON`) |
@@ -40,16 +41,22 @@ make doctor     # sanity check
 ├── Brewfile              # Homebrew packages (brew bundle)
 ├── bootstrap.sh          # Fresh-Mac entry point
 ├── Makefile              # make install | brew | apply | doctor
+├── migrate/              # Personal file pack + restore (external drive)
+│   ├── pack.sh           # Run on OLD Mac → writes archives to drive
+│   └── restore.sh        # Run on NEW Mac from the drive
 ├── docs/MIGRATION.md     # Personal file migration plan (reference)
 └── home/                 # chezmoi source (applied to ~)
     ├── .chezmoi.toml.tmpl
     ├── dot_gitconfig.tmpl
+    ├── dot_zshrc             # Consolidated zsh + oh-my-zsh config
+    ├── dot_bash_profile      # Bash shim → sources .zshrc
     └── .chezmoiscripts/  # run_onchange / run_once hooks
 ```
 
 ## chezmoi hooks
 
 - **`run_onchange_before_10-homebrew.sh`** — runs `brew bundle` when `Brewfile` changes
+- **`run_once_after_15-shell.sh`** — installs oh-my-zsh, zsh-syntax-highlighting, sets default shell to Homebrew zsh
 - **`run_once_after_20-runtimes.sh`** — installs rbenv Ruby, nvm Node, uv Python defaults
 - **`run_once_after_30-macos-defaults.sh`** — applies macOS system defaults
 
@@ -69,11 +76,45 @@ git push
 
 On the new laptop: `chezmoi update` pulls and applies.
 
+## Personal files (external drive)
+
+Dotfiles and dev tools are handled by chezmoi + Brewfile. **Personal folders** (Desktop, Documents, ui-development, etc.) are copied separately so they never land in git.
+
+### On this Mac (before unplugging the drive)
+
+```bash
+# Plug in external drive, then:
+./migrate/pack.sh /Volumes/YourDrive
+
+# Optional: also copy Desktop/old hard drive/ as un-archived cold storage (~34 GB)
+./migrate/pack.sh --with-old-hard-drive /Volumes/YourDrive
+```
+
+This creates `/Volumes/YourDrive/laptop-migration-files/` with:
+
+- One `.tar.gz` per folder (`Desktop.tar.gz`, `ui-development.tar.gz`, …)
+- `cursor-setup.tar.gz` — Cursor settings, keybindings, hooks, custom CSS, Fira Code + Operator Mono fonts
+- `MANIFEST.txt` and `checksums.sha256`
+- `restore.sh` (copied onto the drive)
+
+**Excluded from every archive:** `node_modules`, `Pods`, `dist`, `build`, `coverage`, `graphify-out`, `.next`, `.expo`, `.turbo`, `.cache`, `.gradle`, `DerivedData`, `.DS_Store`. Git history (`.git`) is kept.
+
+**Skipped by default:** Dropbox, Google Drive (re-sync from cloud). Edit the `FOLDERS` array at the top of `migrate/pack.sh` to change what gets packed.
+
+### On the new Mac
+
+```bash
+/Volumes/YourDrive/laptop-migration-files/restore.sh
+```
+
+Verifies checksums, extracts archives into `~`, and skips any folder that already has content. After restore, run `npm install` / `yarn`, `bundle install`, and `pod install` in projects as needed.
+
+See [docs/MIGRATION.md](docs/MIGRATION.md) for the full tier list and decision notes.
+
 ## Follow-up (not in this scaffold)
 
-- Seed dotfiles (`.zshrc`, `.bash_*`, Hyper, Cursor settings)
+- Hyper settings (see `docs/MIGRATION.md` Tier C)
 - Add `mas` App Store entries to Brewfile
-- Personal file copy-to-drive scripts (see `docs/MIGRATION.md`)
 - Trim Brewfile casks you no longer use
 
 ## Reference

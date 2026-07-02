@@ -1,0 +1,2 @@
+# Delegate to zsh config; use zsh as your daily driver.
+[[ -f "$HOME/.zshrc" ]] && source "$HOME/.zshrc"

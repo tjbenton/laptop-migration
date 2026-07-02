@@ -1,0 +1,103 @@
+# Consolidated zsh config — managed by chezmoi (laptop-migration).
+
+# --- Locale ---
+export LC_ALL="en_US.UTF-8"
+export LANG="en_US.UTF-8"
+
+# --- Editor ---
+export EDITOR=vim
+export GIT_EDITOR=vim
+export MANPAGER="less -X"
+
+# --- History ---
+export HISTIGNORE="ls:ls *:cd:cd -:pwd;exit:date:* --help"
+
+# --- Homebrew (sets PATH for Apple Silicon and Intel) ---
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# --- PATH (one entry per line) ---
+export PATH="$HOME/bin:$PATH"                         # Personal scripts (e.g. mount.sh)
+export PATH="$HOME/.local/bin:$PATH"                  # Claude council / local CLI tools
+export ANDROID_HOME="$HOME/Library/Android/sdk"       # Android SDK root
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export PATH="$ANDROID_HOME/platform-tools:$PATH"      # adb, emulator helpers
+export PATH="$HOME/.maestro/bin:$PATH"                # Maestro mobile UI testing
+export CLAUDE_PLUGIN_ROOT="$HOME/.local/claude-council"
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"    # Install casks to /Applications
+
+# --- Node (nvm) ---
+export NVM_DIR="$HOME/.nvm"
+if command -v brew >/dev/null 2>&1; then
+  _nvm_prefix="$(brew --prefix nvm 2>/dev/null || true)"
+  if [[ -n "$_nvm_prefix" && -s "${_nvm_prefix}/nvm.sh" ]]; then
+    # shellcheck source=/dev/null
+    source "${_nvm_prefix}/nvm.sh"
+  fi
+  if [[ -n "$_nvm_prefix" && -s "${_nvm_prefix}/etc/bash_completion.d/nvm" ]]; then
+    # shellcheck source=/dev/null
+    source "${_nvm_prefix}/etc/bash_completion.d/nvm"
+  fi
+fi
+unset _nvm_prefix
+
+# --- Ruby (rbenv) ---
+if command -v rbenv >/dev/null 2>&1; then
+  eval "$(rbenv init - zsh)"
+fi
+
+# --- oh-my-zsh ---
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="mh"
+COMPLETION_WAITING_DOTS="true"
+HIST_STAMPS="mm/dd/yyyy"
+plugins=(git brew npm z)
+
+if [[ -f "$ZSH/oh-my-zsh.sh" ]]; then
+  source "$ZSH/oh-my-zsh.sh"
+fi
+
+# Syntax highlighting — must be sourced after oh-my-zsh
+_highlight="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+if [[ -f "$_highlight" ]]; then
+  source "$_highlight"
+fi
+unset _highlight
+
+# --- Aliases (kept from shell history analysis) ---
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias setup-profiles="eval \"\$(ssh-agent -s)\"; ssh-add -k ~/.ssh/codesign_git_rsa"
+alias profiles-setup="setup-profiles"
+alias sudo='sudo '
+alias reload="exec \$SHELL -l"
+alias l="ls -Glaph"
+alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl"
+
+# --- Functions (kept from shell history analysis) ---
+mkd() {
+  mkdir -p "$@" && cd "$_" || return
+}
+
+fs() {
+  local arg
+  if du -b /dev/null >/dev/null 2>&1; then
+    arg=-sbh
+  else
+    arg=-sh
+  fi
+  if [[ -n "$*" ]]; then
+    du "$arg" -- "$@"
+  else
+    du "$arg" .[^.]* *
+  fi
+}
+
+killservers() {
+  local port="${1:-:[0-9]{2,5\}}"
+  lsof -P | grep 'node' | grep -E "$port" | awk '{print $2}' | xargs kill -9
+}
