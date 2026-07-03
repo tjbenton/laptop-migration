@@ -116,6 +116,7 @@ parse_args() {
 folder_extra_excludes() {
   case "$1" in
     Desktop) printf '%s\n' "old hard drive" ;;
+    Documents) printf '%s\n' "Adobe" ;;
   esac
 }
 
@@ -243,6 +244,7 @@ write_manifest() {
     done
     printf '\nPer-folder excludes:\n'
     printf '  Desktop/old hard drive\n'
+    printf '  Documents/Adobe\n'
   } >"$manifest"
 }
 

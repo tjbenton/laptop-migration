@@ -116,7 +116,7 @@ Fresh OS on new laptop — no Time Machine restore. Copy personal files to an ex
 13. **Secrets manager** — 1Password makes dotfile secrets unnecessary?
 14. **Android / iOS dev** — full reinstall of Android Studio, Xcode, CocoaPods, Maestro?
 15. **Docker** — fresh install or migrate images/volumes?
-16. **Adobe + fonts** — reinstall via Adobe CC or copy font files?
+16. **Adobe + fonts** — skip Adobe CC (not renewing); Fira Code + Operator Mono copied via `cursor-setup.tar.gz`
 17. **Hyper** — still daily driver or mostly Cursor terminal?
 18. **Cursor extensions** — copy all 31 extensions or reinstall from list?
 19. **Browser & cloud** — Firefox bookmarks, Google Drive, iCloud — cloud re-sync or copy?
@@ -138,15 +138,15 @@ The `laptop-migration` repo automates most of this via chezmoi + Brewfile. Manua
 6. Xcode via `xcodes install` or App Store
 7. Android Studio → SDK setup, `pod install` in iOS folders
 
-### Runtime versions (current machine)
+### Runtime versions (global defaults via mise)
 
 | Tool | Version |
 |------|---------|
-| rbenv Ruby | 3.4.9 (shop-rn `.ruby-version`) |
-| nvm Node | 20.19.4 (default) |
-| uv Python | 3.12 |
+| Ruby | 3.4.9 (shop-rn `.ruby-version`; overridable per project) |
+| Node | 20.19.4 (overridable via `.nvmrc` / `.tool-versions`) |
+| Python | 3.12 |
 
-Override via env vars: `LAPTOP_MIGRATION_RUBY`, `LAPTOP_MIGRATION_NODE`, `LAPTOP_MIGRATION_PYTHON`.
+Configured in `~/.config/mise/config.toml` (chezmoi-managed). Override at bootstrap via `LAPTOP_MIGRATION_RUBY`, `LAPTOP_MIGRATION_NODE`, `LAPTOP_MIGRATION_PYTHON`.
 
 ### Brewfile
 
@@ -171,8 +171,9 @@ rsync -av --progress \
   --exclude 'old hard drive' \
   ~/Desktop/ "${BACKUP}/Desktop/"
 
-# Documents (exclude Microsoft User Data)
+# Documents (exclude Adobe and Microsoft User Data)
 rsync -av --progress \
+  --exclude 'Adobe' \
   --exclude 'Microsoft User Data' \
   ~/Documents/ "${BACKUP}/Documents/"
 

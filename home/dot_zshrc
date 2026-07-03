@@ -29,24 +29,9 @@ export PATH="$HOME/.maestro/bin:$PATH"                # Maestro mobile UI testin
 export CLAUDE_PLUGIN_ROOT="$HOME/.local/claude-council"
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"    # Install casks to /Applications
 
-# --- Node (nvm) ---
-export NVM_DIR="$HOME/.nvm"
-if command -v brew >/dev/null 2>&1; then
-  _nvm_prefix="$(brew --prefix nvm 2>/dev/null || true)"
-  if [[ -n "$_nvm_prefix" && -s "${_nvm_prefix}/nvm.sh" ]]; then
-    # shellcheck source=/dev/null
-    source "${_nvm_prefix}/nvm.sh"
-  fi
-  if [[ -n "$_nvm_prefix" && -s "${_nvm_prefix}/etc/bash_completion.d/nvm" ]]; then
-    # shellcheck source=/dev/null
-    source "${_nvm_prefix}/etc/bash_completion.d/nvm"
-  fi
-fi
-unset _nvm_prefix
-
-# --- Ruby (rbenv) ---
-if command -v rbenv >/dev/null 2>&1; then
-  eval "$(rbenv init - zsh)"
+# --- Runtimes (mise) — globals in ~/.config/mise/config.toml; per-project via .tool-versions / .ruby-version / .nvmrc
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
 fi
 
 # --- oh-my-zsh ---

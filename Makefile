@@ -55,9 +55,11 @@ doctor: chezmoi-install
 	@echo "=== toolchain ==="
 	@command -v brew && brew --version | head -1 || echo "brew: not installed"
 	@command -v chezmoi && chezmoi --version || echo "chezmoi: not installed"
-	@command -v rbenv && rbenv --version || echo "rbenv: not installed"
+	@command -v mise && mise --version || echo "mise: not installed"
+	@command -v mise >/dev/null 2>&1 && mise current || echo "mise: no active runtimes"
 	@command -v node && node --version || echo "node: not installed"
-	@command -v uv && uv --version || echo "uv: not installed"
+	@command -v ruby && ruby --version || echo "ruby: not installed"
+	@command -v python3 && python3 --version || echo "python3: not installed"
 
 chezmoi-install:
 	@command -v chezmoi >/dev/null 2>&1 || brew install chezmoi

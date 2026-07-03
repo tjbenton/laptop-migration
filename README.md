@@ -30,9 +30,7 @@ make doctor     # sanity check
 | Package manager | Homebrew + Brewfile | Formulae, casks, VS Code/Cursor extensions |
 | Shell | zsh + oh-my-zsh | Consolidated `~/.zshrc`, syntax highlighting, default shell via `chsh` |
 | Dotfiles | chezmoi | Templated `.gitconfig`, hooks for brew/shell/runtimes/macos |
-| Ruby | rbenv | Default 3.4.9 (override via `LAPTOP_MIGRATION_RUBY`) |
-| Node | nvm | Default 20.19.4 (override via `LAPTOP_MIGRATION_NODE`) |
-| Python | uv | Default 3.12 (override via `LAPTOP_MIGRATION_PYTHON`) |
+| Runtimes | mise | Global Ruby 3.4.9, Node 20.19.4, Python 3.12 in `~/.config/mise/config.toml`; per-project overrides via `.tool-versions` / `.ruby-version` / `.nvmrc` |
 | macOS prefs | defaults write | Finder, Dock, keyboard, screenshots |
 
 ## Repo layout
@@ -50,6 +48,7 @@ make doctor     # sanity check
     ├── dot_gitconfig.tmpl
     ├── dot_zshrc             # Consolidated zsh + oh-my-zsh config
     ├── dot_bash_profile      # Bash shim → sources .zshrc
+    ├── dot_config/mise/      # Global Ruby, Node, Python versions
     └── .chezmoiscripts/  # run_onchange / run_once hooks
 ```
 
@@ -57,7 +56,7 @@ make doctor     # sanity check
 
 - **`run_onchange_before_10-homebrew.sh`** — runs `brew bundle` when `Brewfile` changes
 - **`run_once_after_15-shell.sh`** — installs oh-my-zsh, zsh-syntax-highlighting, sets default shell to Homebrew zsh
-- **`run_once_after_20-runtimes.sh`** — installs rbenv Ruby, nvm Node, uv Python defaults
+- **`run_once_after_20-runtimes.sh`** — `mise install` for global Ruby, Node, Python defaults
 - **`run_once_after_30-macos-defaults.sh`** — applies macOS system defaults
 
 ## Secrets
@@ -99,7 +98,7 @@ This creates `/Volumes/YourDrive/laptop-migration-files/` with:
 
 **Excluded from every archive:** `node_modules`, `Pods`, `dist`, `build`, `coverage`, `graphify-out`, `.next`, `.expo`, `.turbo`, `.cache`, `.gradle`, `DerivedData`, `.DS_Store`. Git history (`.git`) is kept.
 
-**Skipped by default:** Dropbox, Google Drive (re-sync from cloud). Edit the `FOLDERS` array at the top of `migrate/pack.sh` to change what gets packed.
+**Skipped by default:** Dropbox, Google Drive (re-sync from cloud). `Documents/Adobe/` is excluded. Edit the `FOLDERS` array at the top of `migrate/pack.sh` to change what gets packed.
 
 ### On the new Mac
 

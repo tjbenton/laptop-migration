@@ -1,0 +1,6 @@
+# Global runtime defaults — managed by chezmoi (laptop-migration).
+# Per-project overrides: .tool-versions, .ruby-version, .nvmrc
+[tools]
+ruby = {{ env "LAPTOP_MIGRATION_RUBY" | default "3.4.9" | quote }}
+node = {{ env "LAPTOP_MIGRATION_NODE" | default "20.19.4" | quote }}
+python = {{ env "LAPTOP_MIGRATION_PYTHON" | default "3.12" | quote }}

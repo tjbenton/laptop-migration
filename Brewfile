@@ -23,6 +23,8 @@ brew "ios-deploy"
 brew "jq"
 # Swiss Army Knife for macOS
 brew "m-cli"
+# Polyglot runtime manager (Ruby, Node, Python, etc.)
+brew "mise"
 # Programmatically correct mistyped console commands
 brew "thefuck"
 # Watch files and take action when they change
