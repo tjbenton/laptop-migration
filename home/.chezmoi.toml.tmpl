@@ -1,7 +1,7 @@
 # chezmoi configuration — prompts on first init.
 [data]
-    name = "{{ promptStringOnce .chezmoi.sourceDir \"name\" \"Your full name\" }}"
-    email = "{{ promptStringOnce .chezmoi.sourceDir \"email\" \"Your email address\" }}"
+    name = {{ promptStringOnce . "name" "Your full name" | quote }}
+    email = {{ promptStringOnce . "email" "Your email address" | quote }}
 
 [git]
     autoCommit = true
