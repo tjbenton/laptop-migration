@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Fresh Mac bootstrap: Xcode CLT → Homebrew → chezmoi → apply dotfiles.
 # Idempotent — safe to re-run; auto-recovers from partial/failed chezmoi state.
-set -euo pipefail
+set -eo pipefail
 
 REPO="${LAPTOP_MIGRATION_REPO:-tjbenton/laptop-migration}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+set -u
 CHEZMOI_SOURCE="${HOME}/.local/share/chezmoi"
 CHEZMOI_CONFIG="${HOME}/.config/chezmoi"
 
@@ -91,7 +92,9 @@ chezmoi_prompt_args() {
 }
 
 chezmoi_initialized() {
-  chezmoi source-path >/dev/null 2>&1
+  local src
+  src="$(chezmoi source-path 2>/dev/null || true)"
+  [[ -n "${src}" && -d "${src}/.git" ]]
 }
 
 chezmoi_stale_state() {
@@ -103,23 +106,47 @@ reset_chezmoi_state() {
   rm -rf "${CHEZMOI_SOURCE}" "${CHEZMOI_CONFIG}"
 }
 
-apply_dotfiles_once() {
+maybe_regenerate_chezmoi_config() {
+  local source
+  source="$(dotfiles_source)"
+
+  if chezmoi_initialized && [[ ! -f "${CHEZMOI_CONFIG}/chezmoi.toml" ]]; then
+    log "Regenerating chezmoi config..."
+    chezmoi init "${CHEZMOI_INIT_ARGS[@]}" "${source}"
+  fi
+}
+
+init_dotfiles() {
   local source
   source="$(dotfiles_source)"
 
   chezmoi_prompt_args
+  log "Initializing chezmoi from ${source}..."
+  chezmoi init --apply "${CHEZMOI_INIT_ARGS[@]}" "${source}"
+}
 
-  if chezmoi_initialized; then
-    if chezmoi_from_github; then
-      log "chezmoi initialized — pulling latest from GitHub and applying..."
-      if chezmoi update -v; then
-        return 0
-      fi
-      return 1
+update_or_apply_dotfiles() {
+  chezmoi_prompt_args
+  maybe_regenerate_chezmoi_config
+
+  if chezmoi_from_github; then
+    log "chezmoi initialized — pulling latest from GitHub and applying..."
+    if chezmoi update -v; then
+      return 0
     fi
+    return 1
+  fi
 
-    log "chezmoi initialized — applying local dotfiles..."
-    if chezmoi apply -v; then
+  log "chezmoi initialized — applying local dotfiles..."
+  if chezmoi apply -v; then
+    return 0
+  fi
+  return 1
+}
+
+apply_dotfiles_once() {
+  if chezmoi_initialized; then
+    if update_or_apply_dotfiles; then
       return 0
     fi
     return 1
@@ -130,8 +157,7 @@ apply_dotfiles_once() {
     reset_chezmoi_state
   fi
 
-  log "Initializing chezmoi from ${source}..."
-  if chezmoi init --apply "${CHEZMOI_INIT_ARGS[@]}" "${source}"; then
+  if init_dotfiles; then
     return 0
   fi
   return 1
@@ -142,9 +168,18 @@ apply_dotfiles() {
     return 0
   fi
 
-  log "chezmoi apply failed — resetting and retrying from scratch..."
+  if chezmoi_initialized; then
+    log "chezmoi apply failed — retrying apply (keeping source)..."
+    if update_or_apply_dotfiles; then
+      return 0
+    fi
+    err "chezmoi apply failed after retry. Run 'chezmoi doctor' for details."
+    exit 1
+  fi
+
+  log "chezmoi state broken — resetting and re-initializing..."
   reset_chezmoi_state
-  apply_dotfiles_once || {
+  init_dotfiles || {
     err "chezmoi failed after retry. Run 'chezmoi doctor' for details."
     exit 1
   }

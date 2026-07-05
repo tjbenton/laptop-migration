@@ -15,4 +15,7 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 echo "==> brew bundle install --file=${BREWFILE}"
-brew bundle install --file="${BREWFILE}"
+if ! brew bundle install --file="${BREWFILE}"; then
+  echo "WARNING: brew bundle reported failures — bootstrap will continue." >&2
+  echo "Re-run later: brew bundle install --file=${BREWFILE}" >&2
+fi

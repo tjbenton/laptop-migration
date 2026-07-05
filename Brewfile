@@ -47,8 +47,6 @@ cask "android-platform-tools"
 cask "android-studio"
 # Application uninstaller
 cask "appcleaner"
-# Tool to list all active shortcuts of the current application
-cask "cheatsheet"
 # Time tracking tool for agencies and freelancers
 cask "clockify"
 # Write, edit, and chat about your code with AI
