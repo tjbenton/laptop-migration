@@ -3,7 +3,7 @@
 # Idempotent — safe to re-run on a healthy machine.
 set -euo pipefail
 
-REPO="${LAPTOP_MIGRATION_REPO:-tylerbenton-ma/laptop-migration}"
+REPO="${LAPTOP_MIGRATION_REPO:-tjbenton/laptop-migration}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { printf '==> %s\n' "$*"; }

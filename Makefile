@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-REPO := tylerbenton-ma/laptop-migration
+REPO := tjbenton/laptop-migration
 BREWFILE := Brewfile
 
 .PHONY: help install bootstrap brew brew-dump apply diff update macos doctor chezmoi-install

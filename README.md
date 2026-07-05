@@ -5,13 +5,13 @@ One-command Mac dev environment setup using [chezmoi](https://www.chezmoi.io) + 
 Push this repo to your personal GitHub. On a **fresh Mac with zero prior setup**, run:
 
 ```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply tylerbenton-ma/laptop-migration
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply tjbenton/laptop-migration
 ```
 
 Or use the full bootstrap (installs Xcode CLT + Homebrew first):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tylerbenton-ma/laptop-migration/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tjbenton/laptop-migration/main/bootstrap.sh | bash
 ```
 
 After cloning locally:
