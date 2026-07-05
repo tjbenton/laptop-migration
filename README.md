@@ -8,37 +8,28 @@ Push this repo to your personal GitHub. On a **fresh Mac with zero prior setup**
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply tjbenton/laptop-migration
 ```
 
-Or use the full bootstrap (installs Xcode CLT + Homebrew first):
+Or use the full bootstrap (installs Xcode CLT + Homebrew + chezmoi, applies dotfiles, installs Brewfile packages):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/tjbenton/laptop-migration/main/bootstrap.sh | bash
 ```
 
-**After bootstrap:** open a **new terminal tab** so `~/.zshrc` loads. If `which brew` is empty in the current window:
+Safe to re-run — it recovers from partial/failed chezmoi state automatically (no manual `rm -rf ~/.local/share/chezmoi` needed).
+
+**After bootstrap:** open a **new terminal tab** so `~/.zshrc` loads. Bootstrap persists Homebrew to `~/.zprofile`; if `which brew` is empty in the current window only:
 
 ```bash
 eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
 # eval "$(/usr/local/bin/brew shellenv)"  # Intel
 ```
 
-### Troubleshooting (bootstrap stalled after Xcode CLT)
+### Troubleshooting
 
-`curl | bash` runs in a subshell — Homebrew may install but not appear in your current terminal until you run `brew shellenv` or open a new tab.
+`curl | bash` runs in a subshell — Homebrew may not appear in your **current** terminal until you open a new tab. Bootstrap still installs everything; re-running the curl command is safe.
 
-1. Check Homebrew exists:
+If bootstrap fails, fix the reported error and re-run the same curl command — it will reset stale chezmoi state and retry.
 
-```bash
-/opt/homebrew/bin/brew --version
-```
-
-2. Add to current session, then re-run bootstrap (safe to repeat):
-
-```bash
-eval "$(/opt/homebrew/bin/brew shellenv)"
-curl -fsSL https://raw.githubusercontent.com/tjbenton/laptop-migration/main/bootstrap.sh | bash
-```
-
-3. **Preferred if curl keeps failing** — clone and bootstrap locally:
+**Fallback** — clone and bootstrap locally:
 
 ```bash
 eval "$(/opt/homebrew/bin/brew shellenv)"
