@@ -14,6 +14,42 @@ Or use the full bootstrap (installs Xcode CLT + Homebrew first):
 curl -fsSL https://raw.githubusercontent.com/tjbenton/laptop-migration/main/bootstrap.sh | bash
 ```
 
+**After bootstrap:** open a **new terminal tab** so `~/.zshrc` loads. If `which brew` is empty in the current window:
+
+```bash
+eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
+# eval "$(/usr/local/bin/brew shellenv)"  # Intel
+```
+
+### Troubleshooting (bootstrap stalled after Xcode CLT)
+
+`curl | bash` runs in a subshell — Homebrew may install but not appear in your current terminal until you run `brew shellenv` or open a new tab.
+
+1. Check Homebrew exists:
+
+```bash
+/opt/homebrew/bin/brew --version
+```
+
+2. Add to current session, then re-run bootstrap (safe to repeat):
+
+```bash
+eval "$(/opt/homebrew/bin/brew shellenv)"
+curl -fsSL https://raw.githubusercontent.com/tjbenton/laptop-migration/main/bootstrap.sh | bash
+```
+
+3. **Preferred if curl keeps failing** — clone and bootstrap locally:
+
+```bash
+eval "$(/opt/homebrew/bin/brew shellenv)"
+brew install git
+git clone https://github.com/tjbenton/laptop-migration.git ~/ui-development/laptop-migration
+cd ~/ui-development/laptop-migration
+./bootstrap.sh
+```
+
+Verify: `which brew chezmoi mise` and `chezmoi doctor`.
+
 After cloning locally:
 
 ```bash
