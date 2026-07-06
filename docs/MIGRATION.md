@@ -61,8 +61,8 @@ Fresh OS on new laptop — no Time Machine restore. Copy personal files to an ex
 
 **Hyper**
 
-- `~/.hyper.js`
-- `~/.hyper_plugins/package.json` (reinstall plugins; skip `node_modules/`)
+- `~/.hyper.js` — **handled by `migrate/pack.sh`** (`hyper-setup.tar.gz`)
+- `~/.hyper_plugins/package.json` — **handled by migrate pack** (plugins reinstalled via `npm install` on restore)
 
 **Cursor**
 
@@ -204,7 +204,7 @@ rsync -av --progress \
 |------|--------|
 | Brewfile captured | Done (in repo root) |
 | chezmoi + Makefile scaffold | Done |
-| Dotfile seeding (zsh, bash, Hyper, Cursor) | zsh/bash done via chezmoi; Hyper/Cursor **follow-up** |
+| Dotfile seeding (zsh, bash, Hyper, Cursor) | zsh/bash done via chezmoi; Hyper/Cursor **handled by migrate pack** |
 | Personal file copy script | Done (`migrate/pack.sh`, `migrate/restore.sh`) |
 | `mas` App Store entries | **Follow-up** |
 | Secrets (age / 1Password) | **Follow-up** |

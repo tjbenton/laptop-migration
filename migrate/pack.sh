@@ -62,6 +62,7 @@ Options:
 Creates: <drive>/${OUTPUT_DIR_NAME}/
   - One .tar.gz per folder (Desktop.tar.gz, Documents.tar.gz, ...)
   - cursor-setup.tar.gz (Cursor settings, hooks, Fira Code + Operator Mono fonts)
+  - hyper-setup.tar.gz (Hyper config + plugin list)
   - MANIFEST.txt
   - checksums.sha256
   - restore.sh (copied from this repo)
@@ -116,7 +117,8 @@ parse_args() {
 folder_extra_excludes() {
   case "$1" in
     Desktop) printf '%s\n' "old hard drive" ;;
-    Documents) printf '%s\n' "Adobe" ;;
+    Documents) printf '%s\n' "Adobe" "Library" ;;
+    Pictures) printf '%s\n' "Photos Library.photoslibrary" ;;
   esac
 }
 
@@ -156,7 +158,30 @@ pack_folder() {
   build_tar_excludes "$folder"
 
   log "Packing ${folder} -> ${dest}"
-  tar -czf "$dest" -C "$HOME" "${TAR_EXCLUDES[@]}" "$folder"
+  if ! tar --no-xattrs -czf "$dest" -C "$HOME" "${TAR_EXCLUDES[@]}" "$folder"; then
+    warn "Packing ${folder} completed with errors — archive may be partial: ${dest}"
+  fi
+}
+
+pack_hyper_setup() {
+  local dest="${OUT_DIR}/hyper-setup.tar.gz"
+  local -a items=()
+
+  if [[ -f "${HOME}/.hyper.js" ]]; then
+    items+=(".hyper.js")
+  fi
+  if [[ -f "${HOME}/.hyper_plugins/package.json" ]]; then
+    items+=(".hyper_plugins/package.json")
+  fi
+
+  if [[ ${#items[@]} -eq 0 ]]; then
+    warn "Skipping hyper-setup (no Hyper config found)"
+    return 0
+  fi
+
+  log "Packing hyper-setup -> ${dest}"
+  log "  Hyper config and plugin list (node_modules excluded — reinstalled on restore)"
+  tar -czf "$dest" -C "$HOME" "${items[@]}"
 }
 
 pack_cursor_setup() {
@@ -238,6 +263,10 @@ write_manifest() {
       printf '\nCursor + fonts archive:\n'
       printf '  cursor-setup.tar.gz  (settings, keybindings, hooks, style.css, Fira Code, Operator Mono)\n'
     fi
+    if [[ -f "${OUT_DIR}/hyper-setup.tar.gz" ]]; then
+      printf '\nHyper archive:\n'
+      printf '  hyper-setup.tar.gz  (.hyper.js, plugin package.json)\n'
+    fi
     printf '\nExcluded patterns (all archives):\n'
     for pattern in "${EXCLUDES[@]}"; do
       printf '  %s\n' "$pattern"
@@ -245,6 +274,8 @@ write_manifest() {
     printf '\nPer-folder excludes:\n'
     printf '  Desktop/old hard drive\n'
     printf '  Documents/Adobe\n'
+    printf '  Documents/Library\n'
+    printf '  Pictures/Photos Library.photoslibrary\n'
   } >"$manifest"
 }
 
@@ -272,6 +303,7 @@ main() {
   done
 
   pack_cursor_setup
+  pack_hyper_setup
 
   if [[ "$WITH_OLD_HARD_DRIVE" == true ]]; then
     copy_old_hard_drive

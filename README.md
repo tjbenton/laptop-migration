@@ -120,6 +120,7 @@ This creates `/Volumes/YourDrive/laptop-migration-files/` with:
 
 - One `.tar.gz` per folder (`Desktop.tar.gz`, `ui-development.tar.gz`, …)
 - `cursor-setup.tar.gz` — Cursor settings, keybindings, hooks, custom CSS, Fira Code + Operator Mono fonts
+- `hyper-setup.tar.gz` — Hyper config (`.hyper.js`) and plugin list
 - `MANIFEST.txt` and `checksums.sha256`
 - `restore.sh` (copied onto the drive)
 
@@ -139,7 +140,7 @@ See [docs/MIGRATION.md](docs/MIGRATION.md) for the full tier list and decision n
 
 ## Follow-up (not in this scaffold)
 
-- Hyper settings (see `docs/MIGRATION.md` Tier C)
+- Hyper settings (see `docs/MIGRATION.md` Tier C) — **handled by migrate pack** (`hyper-setup.tar.gz`)
 - Add `mas` App Store entries to Brewfile
 - Trim Brewfile casks you no longer use
 

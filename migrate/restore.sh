@@ -93,6 +93,31 @@ fix_cursor_settings_paths() {
   sed -i '' "s|\"file:///Users/[^\"]*/.vscode/style.css\"|\"file://${HOME}/.vscode/style.css\"|g" "$settings"
 }
 
+restore_hyper_setup() {
+  local archive="${SCRIPT_DIR}/hyper-setup.tar.gz"
+
+  [[ -f "$archive" ]] || return 0
+
+  log "Restoring Hyper config and plugin list from hyper-setup.tar.gz"
+  mkdir -p "${HOME}/.hyper_plugins"
+
+  tar -xzf "$archive" -C "$HOME"
+
+  if [[ -f "${HOME}/.hyper_plugins/package.json" ]]; then
+    if command -v npm >/dev/null 2>&1; then
+      log "Installing Hyper plugins..."
+      (
+        cd "${HOME}/.hyper_plugins"
+        npm install --no-fund --no-audit
+      )
+    else
+      warn "npm not found — install Hyper plugins manually: cd ~/.hyper_plugins && npm install"
+    fi
+  fi
+
+  log "Restart Hyper to pick up config and plugins."
+}
+
 restore_cursor_setup() {
   local archive="${SCRIPT_DIR}/cursor-setup.tar.gz"
 
@@ -118,6 +143,7 @@ main() {
   local -a skipped=()
   local found_archive=false
   local restored_cursor=false
+  local restored_hyper=false
 
   if [[ "$SKIP_CHECKSUMS" != true ]]; then
     verify_checksums
@@ -129,7 +155,7 @@ main() {
     [[ -e "$archive" ]] || continue
     folder="$(basename "${archive%.tar.gz}")"
 
-    if [[ "$folder" == "cursor-setup" ]]; then
+    if [[ "$folder" == "cursor-setup" || "$folder" == "hyper-setup" ]]; then
       continue
     fi
 
@@ -146,6 +172,12 @@ main() {
     tar -xzf "$archive" -C "$HOME"
     restored+=("$folder")
   done
+
+  if [[ -f "${SCRIPT_DIR}/hyper-setup.tar.gz" ]]; then
+    restore_hyper_setup
+    restored_hyper=true
+    found_archive=true
+  fi
 
   if [[ -f "${SCRIPT_DIR}/cursor-setup.tar.gz" ]]; then
     restore_cursor_setup
@@ -166,6 +198,10 @@ main() {
     for folder in "${restored[@]}"; do
       printf '  - %s\n' "$folder"
     done
+  fi
+
+  if [[ "$restored_hyper" == true ]]; then
+    printf '  - Hyper setup (.hyper.js, plugins)\n'
   fi
 
   if [[ "$restored_cursor" == true ]]; then
@@ -190,6 +226,10 @@ main() {
   printf '  npm install / yarn / pnpm install\n'
   printf '  bundle install\n'
   printf '  pod install   (iOS projects)\n'
+  if [[ "$restored_hyper" == true ]]; then
+    printf '\n'
+    log "Hyper: quit and reopen the app to pick up config and plugins."
+  fi
   if [[ "$restored_cursor" == true ]]; then
     printf '\n'
     log "Cursor: quit and reopen the app to pick up settings and fonts."
